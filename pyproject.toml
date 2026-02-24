@@ -1,0 +1,41 @@
+[build-system]
+requires = ["hatchling"]
+build-backend = "hatchling.build"
+
+[project]
+name = "superset-nl-explorer"
+version = "0.1.0"
+description = "Natural language LLM interface for Apache Superset — chart, dashboard, and data exploration via chat"
+readme = "README.md"
+requires-python = ">=3.10"
+license = { text = "MIT" }
+keywords = ["superset", "llm", "natural-language", "data-exploration", "plugin"]
+dependencies = [
+    "apache-superset-core>=0.0.1rc4",
+    "litellm>=1.40",
+    "marshmallow>=3.20",
+]
+
+[dependency-groups]
+dev = [
+    "pytest>=8.0",
+    "pytest-mock>=3.12",
+    "pytest-asyncio>=0.23",
+    "flask>=2.2.5",
+]
+
+[tool.hatch.build.targets.wheel]
+packages = ["backend/src/nl_explorer"]
+
+[tool.hatch.build.targets.sdist]
+include = [
+    "backend/",
+    "frontend/",
+    "extension.json",
+    "README.md",
+    "pyproject.toml",
+]
+
+[tool.pytest.ini_options]
+testpaths = ["tests"]
+asyncio_mode = "auto"

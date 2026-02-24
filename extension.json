@@ -1,0 +1,36 @@
+{
+  "publisher": "mit",
+  "name": "nl-explorer",
+  "displayName": "NL Explorer — Ask Data",
+  "version": "0.1.0",
+  "license": "MIT",
+  "description": "Natural language LLM interface for data exploration and chart/dashboard creation",
+  "frontend": {
+    "contributions": {
+      "commands": [],
+      "views": {
+        "explore": ["mit.nl-explorer.explore-panel"],
+        "dashboard": ["mit.nl-explorer.dashboard-panel"]
+      },
+      "menus": {
+        "nav": [
+          {
+            "command": "mit.nl-explorer.open-page",
+            "label": "Ask Data",
+            "icon": "ChatOutlined"
+          }
+        ]
+      },
+      "editors": []
+    },
+    "moduleFederation": {
+      "name": "nlExplorer",
+      "exposes": ["./index"]
+    }
+  },
+  "backend": {
+    "entryPoints": ["nl_explorer.entrypoint"],
+    "files": ["backend/src/nl_explorer/**/*.py"]
+  },
+  "permissions": []
+}

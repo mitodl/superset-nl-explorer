@@ -1,0 +1,22 @@
+# Example custom Superset image with NL Explorer plugin
+#
+# Build:
+#   docker build -f Dockerfile.custom -t my-superset-with-nl .
+#
+# The image installs superset-nl-explorer from PyPI and configures it
+# via environment variables passed at runtime.
+
+FROM apache/superset:5.0.0
+
+USER root
+
+# Install the plugin (from PyPI once published, or from local wheel)
+COPY dist/*.whl /tmp/
+RUN pip install /tmp/*.whl
+# OR when published:
+# RUN pip install superset-nl-explorer
+
+USER superset
+
+# Copy custom config that enables the extension
+COPY superset_config_custom.py /app/pythonpath/superset_config_docker.py
