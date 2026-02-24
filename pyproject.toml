@@ -8,7 +8,7 @@ version = "0.1.0"
 description = "Natural language LLM interface for Apache Superset — chart, dashboard, and data exploration via chat"
 readme = "README.md"
 requires-python = ">=3.10"
-license = { text = "MIT" }
+license = { text = "BSD-3-Clause" }
 keywords = ["superset", "llm", "natural-language", "data-exploration", "plugin"]
 dependencies = [
     "apache-superset-core>=0.0.1rc4",
