@@ -8,7 +8,7 @@ interface PageContext {
   org?: Record<string, unknown>;
 }
 
-
+interface Message {
   role: "user" | "assistant";
   content: string;
 }
