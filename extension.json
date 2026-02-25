@@ -3,7 +3,7 @@
   "name": "nl-explorer",
   "displayName": "NL Explorer — Ask Data",
   "version": "0.1.0",
-  "license": "MIT",
+  "license": "BSD-3-Clause",
   "description": "Natural language LLM interface for data exploration and chart/dashboard creation",
   "frontend": {
     "contributions": {

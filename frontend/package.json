@@ -8,8 +8,15 @@
   },
   "dependencies": {
     "react": "^18.0.0",
-    "react-dom": "^18.0.0",
-    "@apache-superset/core": "^0.1.0"
+    "react-dom": "^18.0.0"
+  },
+  "peerDependencies": {
+    "@apache-superset/core": "*"
+  },
+  "peerDependenciesMeta": {
+    "@apache-superset/core": {
+      "optional": true
+    }
   },
   "devDependencies": {
     "@babel/core": "^7.24.0",
