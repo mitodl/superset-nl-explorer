@@ -31,6 +31,10 @@ class ChatRequestSchema(Schema):
         load_default=False,
         metadata={"description": "Whether to stream the response via SSE"},
     )
+    page_context = fields.Dict(
+        load_default={},
+        metadata={"description": "Page context from the parent Superset frame (dashboard, datasource, org config)"},
+    )
 
 
 class ColumnInfoSchema(Schema):

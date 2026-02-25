@@ -80,7 +80,7 @@ class NLExplorerRestApi(BaseApi):
         except Exception:
             current_user_name = None
 
-        system_prompt = build_system_prompt(ctx, current_user=current_user_name)
+        system_prompt = build_system_prompt(ctx, current_user=current_user_name, page_context=req.get("page_context", {}))
 
         messages: list[dict[str, Any]] = [{"role": "system", "content": system_prompt}]
         for turn in req.get("conversation", []):

@@ -27,17 +27,23 @@ Available Superset chart types (use the viz_type value when calling tools):
 """.strip()
 
 
-def build_system_prompt(context: dict[str, Any], current_user: str | None = None) -> str:
+def build_system_prompt(
+    context: dict[str, Any],
+    current_user: str | None = None,
+    page_context: dict[str, Any] | None = None,
+) -> str:
     """
     Build the LLM system prompt with dataset context and instructions.
 
     Args:
         context: Dict from context_builder.get_user_context().
         current_user: Display name of the authenticated Superset user.
-
-    Returns:
-        System prompt string.
+        page_context: Page-level context injected from the parent Superset frame
+            via postMessage.  Keys: page, dashboard, datasource, user, org.
+            The ``org`` sub-dict may contain ``system_prompt_suffix`` and
+            ``allowed_schemas`` set via COMMON_BOOTSTRAP_OVERRIDES_FUNC.
     """
+    page_context = page_context or {}
     datasets = context.get("datasets", [])
 
     dataset_summary_lines = []
@@ -51,8 +57,23 @@ def build_system_prompt(context: dict[str, Any], current_user: str | None = None
     dataset_block = "\n".join(dataset_summary_lines) if dataset_summary_lines else "  (none available)"
     user_line = f"Current user: {current_user}\n" if current_user else ""
 
+    # Build page-awareness block from injected context
+    page_lines: list[str] = []
+    if page_context.get("dashboard"):
+        page_lines.append(f"The user is currently viewing the '{page_context['dashboard']}' dashboard.")
+    if page_context.get("datasource"):
+        page_lines.append(f"The active dataset in the current view is: {page_context['datasource']}.")
+    if page_context.get("page"):
+        page_lines.append(f"Current Superset page path: {page_context['page']}.")
+    page_block = ("\n" + "\n".join(page_lines) + "\n") if page_lines else ""
+
+    # Org-level instructions from COMMON_BOOTSTRAP_OVERRIDES_FUNC
+    org = page_context.get("org", {}) if isinstance(page_context.get("org"), dict) else {}
+    org_suffix = str(org.get("system_prompt_suffix", "")).strip()
+    org_block = f"\n{org_suffix}\n" if org_suffix else ""
+
     return f"""You are an AI data analyst assistant embedded in Apache Superset.
-{user_line}
+{user_line}{page_block}
 Your job is to help users explore data and create charts and dashboards using natural language.
 
 You have access to the following tools:
@@ -74,4 +95,4 @@ Guidelines:
 - For ambiguous requests, ask a clarifying question rather than guessing.
 - When running SQL, keep queries efficient — use LIMIT when exploring.
 - Be concise but helpful. Explain what you are doing and why.
-"""
+{org_block}"""

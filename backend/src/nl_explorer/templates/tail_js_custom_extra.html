@@ -91,10 +91,50 @@
     var iframe = document.getElementById('nl-explorer-iframe');
     var loaded = false;
 
+    function buildContext() {
+      var bd = window.bootstrapData || {};
+      var path = window.location.pathname;
+
+      // Explore page: form_data contains datasource info
+      var datasource = null;
+      if (bd.form_data) {
+        datasource = (bd.form_data.datasource_name) ||
+                     (bd.datasource && bd.datasource.name) || null;
+      }
+
+      // Dashboard page
+      var dashboard = null;
+      if (bd.dashboard_data) {
+        dashboard = bd.dashboard_data.dashboard_title || null;
+      }
+
+      return {
+        page: path,
+        datasource: datasource,
+        dashboard: dashboard,
+        user: bd.user ? (bd.user.username || bd.user.email) : null,
+        // Org-level config injected via COMMON_BOOTSTRAP_OVERRIDES_FUNC
+        org: bd.nl_explorer || {},
+      };
+    }
+
+    function sendContextToIframe() {
+      try {
+        iframe.contentWindow.postMessage({
+          type: 'NL_EXPLORER_CONTEXT',
+          payload: buildContext(),
+        }, window.location.origin);
+      } catch (e) { /* cross-origin guard */ }
+    }
+
     function openDrawer() {
       if (!loaded) {
         iframe.src = '/nl-explorer/';
         loaded = true;
+        iframe.addEventListener('load', sendContextToIframe);
+      } else {
+        // Re-send context in case the user navigated to a different page
+        sendContextToIframe();
       }
       drawer.classList.add('open');
       drawer.setAttribute('aria-hidden', 'false');

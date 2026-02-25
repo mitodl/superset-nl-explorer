@@ -1,6 +1,14 @@
-import React, { useState } from "react";
+import React, { useState, useEffect, useRef } from "react";
 
-interface Message {
+interface PageContext {
+  page?: string;
+  datasource?: string | null;
+  dashboard?: string | null;
+  user?: string | null;
+  org?: Record<string, unknown>;
+}
+
+
   role: "user" | "assistant";
   content: string;
 }
@@ -28,6 +36,21 @@ export default function ChatPage() {
   const [input, setInput] = useState("");
   const [loading, setLoading] = useState(false);
   const [datasetId, setDatasetId] = useState<number | null>(null);
+  const [pageContext, setPageContext] = useState<PageContext>({});
+  const pageContextRef = useRef<PageContext>({});
+
+  // Receive page context from the parent Superset frame via postMessage
+  useEffect(() => {
+    const handler = (e: MessageEvent) => {
+      if (e.origin !== window.location.origin) return;
+      if (e.data?.type === "NL_EXPLORER_CONTEXT") {
+        pageContextRef.current = e.data.payload as PageContext;
+        setPageContext(e.data.payload as PageContext);
+      }
+    };
+    window.addEventListener("message", handler);
+    return () => window.removeEventListener("message", handler);
+  }, []);
 
   const sendMessage = async () => {
     if (!input.trim() || loading) return;
@@ -47,6 +70,7 @@ export default function ChatPage() {
           message: input,
           conversation: nextConversation,
           dataset_id: datasetId,
+          page_context: pageContextRef.current,
           stream: false,
         }),
       });
@@ -85,6 +109,14 @@ export default function ChatPage() {
         <p style={styles.subtitle}>
           Explore your data and create charts using natural language.
         </p>
+        {(pageContext.dashboard || pageContext.datasource) && (
+          <p style={styles.contextBadge}>
+            📍 Context:{" "}
+            {pageContext.dashboard
+              ? `Dashboard — ${pageContext.dashboard}`
+              : `Dataset — ${pageContext.datasource}`}
+          </p>
+        )}
       </div>
 
       <div style={styles.chatArea}>
@@ -175,6 +207,15 @@ const styles: Record<string, React.CSSProperties> = {
     display: "flex",
     flexDirection: "column",
     gap: 12,
+  },
+  contextBadge: {
+    fontSize: 12,
+    color: "#1677ff",
+    background: "#e8f0fe",
+    borderRadius: 6,
+    padding: "2px 8px",
+    display: "inline-block",
+    marginTop: 6,
   },
   empty: { color: "#888", textAlign: "center", marginTop: 64 },
   exampleLabel: { fontWeight: "bold", marginTop: 24 },
