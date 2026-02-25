@@ -11,12 +11,28 @@ Usage in superset_config.py:
 from __future__ import annotations
 
 import logging
+import os
+
+from jinja2 import ChoiceLoader, FileSystemLoader
 
 logger = logging.getLogger(__name__)
+
+# Templates directory ships alongside this module
+_TEMPLATES_DIR = os.path.join(os.path.dirname(__file__), "templates")
+
+
+def _inject_template_loader(app) -> None:  # type: ignore[type-arg]
+    """Prepend our templates dir so tail_js_custom_extra.html is served from here."""
+    app.jinja_loader = ChoiceLoader([
+        FileSystemLoader(_TEMPLATES_DIR),
+        app.jinja_loader,
+    ])
 
 
 def register(app) -> None:  # type: ignore[type-arg]
     """Register the NL Explorer blueprint and REST API with a Flask app."""
+    _inject_template_loader(app)
+
     try:
         from nl_explorer.blueprint import create_blueprint
 
