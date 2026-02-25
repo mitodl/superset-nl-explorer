@@ -1,11 +1,12 @@
-const { ModuleFederationPlugin } = require("webpack").container;
+const HtmlWebpackPlugin = require("html-webpack-plugin");
 const path = require("path");
 
 module.exports = {
-  entry: "./src/index",
+  entry: "./src/index.tsx",
   output: {
     path: path.resolve(__dirname, "../dist/frontend/dist"),
-    publicPath: "auto",
+    filename: "bundle.[contenthash].js",
+    publicPath: "/nl-explorer/",
     clean: true,
   },
   resolve: {
@@ -25,17 +26,9 @@ module.exports = {
     ],
   },
   plugins: [
-    new ModuleFederationPlugin({
-      name: "nlExplorer",
-      filename: "remoteEntry.js",
-      exposes: {
-        "./index": "./src/index",
-      },
-      shared: {
-        react: { singleton: true, requiredVersion: "^18.0.0" },
-        "react-dom": { singleton: true, requiredVersion: "^18.0.0" },
-        "@apache-superset/core": { singleton: true, import: false },
-      },
+    new HtmlWebpackPlugin({
+      template: "./public/index.html",
+      filename: "index.html",
     }),
   ],
 };

@@ -11,7 +11,7 @@ requires-python = ">=3.10"
 license = { text = "BSD-3-Clause" }
 keywords = ["superset", "llm", "natural-language", "data-exploration", "plugin"]
 dependencies = [
-    "apache-superset>=6.0.0",
+    "flask-appbuilder>=4.5",
     "litellm>=1.40",
     "marshmallow>=3.20",
 ]

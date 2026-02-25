@@ -21,7 +21,7 @@ interface AssistantMessage extends Message {
 
 type ConversationMessage = Message | AssistantMessage;
 
-const API_BASE = "/api/v1/extensions/nl_explorer";
+const API_BASE = "/api/v1/nl_explorer";
 
 export default function ChatPage() {
   const [conversation, setConversation] = useState<ConversationMessage[]>([]);
