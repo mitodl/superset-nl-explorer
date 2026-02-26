@@ -151,13 +151,12 @@ def dispatch_tool_call(tool_name: str, arguments: dict[str, Any]) -> dict[str, A
 
 
 def _run_sql(arguments: dict[str, Any]) -> dict[str, Any]:
-    """Execute SQL via Superset's SQL Lab execution layer."""
+    """Execute SQL directly via the database engine."""
     from superset.daos.database import DatabaseDAO
-    from superset.sql_lab import get_sql_results
 
     database_id = arguments["database_id"]
     sql = arguments["sql"]
-    limit = arguments.get("limit", 100)
+    limit = int(arguments.get("limit", 100))
 
     database = DatabaseDAO.find_by_id(database_id)
     if not database:
@@ -167,16 +166,13 @@ def _run_sql(arguments: dict[str, Any]) -> dict[str, Any]:
     if "limit" not in sql.lower():
         sql = f"{sql.rstrip(';')} LIMIT {limit}"
 
-    results = get_sql_results(
-        ct=None,
-        query_id=None,
-        rendered_query=sql,
-        return_results=True,
-        store_results=False,
-        username=None,
-        start_time=None,
-        expand_data=False,
-        datasource_id=database_id,
-        datasource_type="table",
-    )
-    return results or {}
+    try:
+        df = database.get_df(sql)
+        return {
+            "columns": list(df.columns),
+            "rows": df.head(limit).values.tolist(),
+            "row_count": len(df),
+        }
+    except Exception as exc:  # noqa: BLE001
+        logger.exception("SQL execution failed: %s", exc)
+        return {"error": str(exc)}

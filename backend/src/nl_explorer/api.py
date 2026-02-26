@@ -104,10 +104,32 @@ class NLExplorerRestApi(BaseApi):
             if not tool_calls:
                 break
 
-            messages.append({"role": "assistant", "content": result.get("message", ""), "tool_calls": tool_calls})
+            # Build a properly-formatted OpenAI-style assistant message so that
+            # LiteLLM can correctly translate it to Bedrock's converse format.
+            messages.append({
+                "role": "assistant",
+                "content": result.get("message") or None,
+                "tool_calls": [
+                    {
+                        "id": tc["id"],
+                        "type": "function",
+                        "function": {
+                            "name": tc["name"],
+                            "arguments": json.dumps(tc["arguments"]),
+                        },
+                    }
+                    for tc in tool_calls
+                ],
+            })
+            # Each tool result must reference the matching tool_call_id so that
+            # Bedrock receives exactly one toolResult per toolUse block.
             for tc in tool_calls:
-                tool_result = llm_service.dispatch_tool_call(tc["name"], tc["arguments"])
-                messages.append(tool_result)
+                raw = llm_service.dispatch_tool_call(tc["name"], tc["arguments"])
+                messages.append({
+                    "role": "tool",
+                    "tool_call_id": tc["id"],
+                    "content": raw["content"],
+                })
 
         conversation_out = [
             {"role": m["role"], "content": m.get("content") or ""}
