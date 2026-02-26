@@ -83,7 +83,7 @@
   <iframe id="nl-explorer-iframe" src="" title="AI Data Explorer"></iframe>
 </div>
 
-<script>
+<script nonce="{{ csp_nonce() }}">
   (function () {
     var fab = document.getElementById('nl-explorer-fab');
     var drawer = document.getElementById('nl-explorer-drawer');
