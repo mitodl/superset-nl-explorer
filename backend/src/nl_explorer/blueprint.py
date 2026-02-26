@@ -9,7 +9,7 @@ from __future__ import annotations
 import logging
 import os
 
-from flask import Blueprint, Response, send_from_directory
+from flask import Blueprint, Response, make_response, render_template_string, send_from_directory
 
 logger = logging.getLogger(__name__)
 
@@ -33,6 +33,13 @@ def create_blueprint(static_dir: str | None = None) -> Blueprint:
         """Serve the SPA index or static assets."""
         if path and os.path.exists(os.path.join(dist_dir, path)):
             return send_from_directory(dist_dir, path)  # type: ignore[return-value]
-        return send_from_directory(dist_dir, "index.html")  # type: ignore[return-value]
+        # Render index.html as a Jinja template so Flask-Talisman's csp_nonce()
+        # helper can inject the per-request nonce into every <script> tag.
+        # Without this, Superset's strict-dynamic CSP blocks all script execution.
+        index_path = os.path.join(dist_dir, "index.html")
+        with open(index_path) as f:  # noqa: PTH123
+            html = f.read()
+        html = html.replace("<script ", '<script nonce="{{ csp_nonce() }}" ')
+        return make_response(render_template_string(html))  # type: ignore[return-value]
 
     return bp
